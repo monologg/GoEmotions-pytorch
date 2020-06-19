@@ -1,0 +1,4 @@
+ambiguous
+negative
+neutral
+positive
