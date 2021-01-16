@@ -57,7 +57,7 @@ You can change the parameters from the json files in `config` directory.
 | ----------------- | ---: |
 | Learning rate     | 5e-5 |
 | Warmup proportion |  0.1 |
-| Epochs            |    8 |
+| Epochs            |   10 |
 | Max Seq Length    |   50 |
 | Batch size        |   16 |
 
@@ -79,9 +79,9 @@ Best Result of `Macro F1`
 
 | Macro F1 (%) |  Dev  | Test  |
 | ------------ | :---: | :---: |
-| original     | 47.67 | 48.76 |
-| group        | 66.06 | 67.17 |
-| ekman        | 59.81 | 61.48 |
+| original     | 50.16 | 50.30 |
+| group        | 69.41 | 70.06 |
+| ekman        | 62.59 | 62.38 |
 
 ## Pipeline
 
@@ -91,7 +91,7 @@ Best Result of `Macro F1`
   - Hierarchical Group Taxonomy: `monologg/bert-base-cased-goemotions-group`
   - Ekman Taxonomy: `monologg/bert-base-cased-goemotions-ekman`
 
-### Original GoEmotions Taxonomy
+### 1. Original GoEmotions Taxonomy
 
 ```python
 from transformers import BertTokenizer
@@ -118,13 +118,47 @@ texts = [
 pprint(goemotions(texts))
 
 # Output
-[{'labels': ['neutral'], 'scores': [0.9750906]},
- {'labels': ['curiosity', 'love'], 'scores': [0.9694574, 0.92274606]},
+ [{'labels': ['neutral'], 'scores': [0.9750906]},
+ {'labels': ['curiosity', 'love'], 'scores': [0.9694574, 0.9227462]},
  {'labels': ['love'], 'scores': [0.993483]},
  {'labels': ['anger'], 'scores': [0.99225825]}]
 ```
 
-### Ekman Taxonomy
+
+### 2. Group Taxonomy
+
+```python
+from transformers import BertTokenizer
+from model import BertForMultiLabelClassification
+from multilabel_pipeline import MultiLabelPipeline
+from pprint import pprint
+
+tokenizer = BertTokenizer.from_pretrained("monologg/bert-base-cased-goemotions-group")
+model = BertForMultiLabelClassification.from_pretrained("monologg/bert-base-cased-goemotions-group")
+
+goemotions = MultiLabelPipeline(
+    model=model,
+    tokenizer=tokenizer,
+    threshold=0.3
+)
+
+texts = [
+    "Hey that's a thought! Maybe we need [NAME] to be the celebrity vaccine endorsement!",
+    "it’s happened before?! love my hometown of beautiful new ken 😂😂",
+    "I love you, brother.",
+    "Troll, bro. They know they're saying stupid shit. The motherfucker does nothing but stink up libertarian subs talking shit",
+]
+
+pprint(goemotions(texts))
+
+# Output
+[{'labels': ['positive'], 'scores': [0.9989434]},
+ {'labels': ['ambiguous', 'positive'], 'scores': [0.99801123, 0.99845874]},
+ {'labels': ['positive'], 'scores': [0.99930394]},
+ {'labels': ['negative'], 'scores': [0.9984231]}]
+```
+
+### 3. Ekman Taxonomy
 
 ```python
 from transformers import BertTokenizer
@@ -151,8 +185,8 @@ texts = [
 pprint(goemotions(texts))
 
 # Output
-[{'labels': ['joy', 'neutral'], 'scores': [0.30459452, 0.9217335]},
- {'labels': ['joy', 'surprise'], 'scores': [0.9981394, 0.99863845]},
+ [{'labels': ['joy', 'neutral'], 'scores': [0.30459446, 0.9217335]},
+ {'labels': ['joy', 'surprise'], 'scores': [0.9981395, 0.99863845]},
  {'labels': ['joy'], 'scores': [0.99910116]},
  {'labels': ['anger'], 'scores': [0.9984291]}]
 ```
